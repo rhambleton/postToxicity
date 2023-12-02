@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <title>Livys Toxic Post Detector</title>
+    </head>
+    <body>
+        <div>
+            <textarea id="postText" rows="20" cols="50"></textarea><br>
+            <input type="button" value="Check and Post" onclick="CheckAndPost();"><br>
+        </div>
+        <div>&nbsp;</div>
+        <div id="appMessages"></div>
+    </body>
+    <script>
+        async function CheckAndPost() {
+            clearAppMessages()
+            // make sure they typed something in
+            if (document.getElementById("postText").value == '') {
+                // - if they didn't - tell them to type something in and try again
+                alert("Your message is blank.  There is nothing to post.")
+            } else {
+
+                // check if the post is toxic
+                checkValue = await checkText()
+                if (checkValue == "true") {
+                    // it isn't, so post it
+                    postText()
+                } else {
+                    // it is, so ask them to confirm they want to send it
+                    if (confirmSend()) {
+                        // if they do, email their parent
+                        emailParent()
+
+                        // post the message
+                        postText()
+                    } else {
+                        clearText()
+                    }
+                }
+            }
+        }
+
+        async function checkText() {
+            // ask our API if their text is toxic
+            appendAppMessage("checking the text...")
+            checkResponse = await synchronousFetch("http://localhost:8000/checkText", document.getElementById("postText").value)
+            if (checkResponse == "true") {
+                appendAppMessage("PASS.<BR>")
+            } else {
+                appendAppMessage("FAIL.<BR>")
+            }
+            return checkResponse
+        }
+
+        function clearText() {
+            document.getElementById("postText").value = ""
+        }
+
+        function postText() {
+            // post the text message to the social media site
+            appendAppMessage("posting the text...")
+            appendAppMessage("DONE.<BR>")
+            clearText()
+        }
+
+        function emailParent() {
+            // email their parent a copy of the message
+            appendAppMessage("emailing your parent...")
+            appendAppMessage("DONE.<BR>")
+        }
+
+        function confirmSend() {
+            // ask them to confirm that they want to post the message
+            return confirm("This message may not be appropriate for you to post online. If you wish to proceed a copy will be sent to your parents.")
+        }
+
+        // this function handles talking to the API and collecting the response
+        async function synchronousFetch(url, data) {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: data })
+            });
+            if (response.ok) {
+                const data = await response.text();
+                return data;
+            } else {
+                throw new Error('Request failed: ' + response.statusText);
+            }
+        }
+
+        // this function clears our app message window
+        function clearAppMessages() {
+            var div = document.getElementById("appMessages")
+            div.innerHTML = ""
+        }
+
+        // this function adds one more message to our app message window
+        function appendAppMessage(newMessage) {
+            console.log(newMessage)
+            var div = document.getElementById("appMessages")
+            div.insertAdjacentHTML('beforeend', newMessage)
+        }
+    </script>
+</html>
