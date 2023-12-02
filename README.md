@@ -7,3 +7,7 @@
 - If the post appears toxic, an alert is displayed the user is given two options
     - Continue - the message will be posted online, and a copy will be emailed to the users parent.
     - Cancel - the user is given the chance to reword their message before posting.
+  
+## System Components
+- A simple web interface (website/default.html)
+- A python API that passes the message through a pretrained AI model (main.py)
